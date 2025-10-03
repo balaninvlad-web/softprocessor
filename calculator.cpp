@@ -1,17 +1,7 @@
-#include <TXLib.h>
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <sys/stat.h>
-
 #include "stack_functions.h"
 #include "calculator.h"
 
-int* read_from_file(const char* TEST, size_t size_of_buffer); //TODO в ашку засунь
-
-int* read_from_file(const char* TEST, size_t size_of_buffer)
+int* read_from_file(const char* TEST, size_t* size_of_buffer)
 {
     FILE* input_file = fopen(TEST, "rb");
 
@@ -21,19 +11,19 @@ int* read_from_file(const char* TEST, size_t size_of_buffer)
 
     stat (TEST, &statbuf);
 
-    size_of_buffer = statbuf.st_size;
+    *size_of_buffer = statbuf.st_size;
 
-    assert(size_of_buffer != 0);
+    assert(*size_of_buffer != 0);
 
-    $(size_of_buffer);
+    $(*size_of_buffer);
 
-    int* buffer = (int*)calloc(size_of_buffer + 1, sizeof(char));
+    int* buffer = (int*)calloc(*size_of_buffer + 1, sizeof(char));
 
     assert(buffer != NULL);
 
-    buffer[size_of_buffer] = '\0';
+    buffer[*size_of_buffer] = '\0';
 
-    fread(buffer, sizeof(int), size_of_buffer, input_file);
+    fread(buffer, sizeof(int), *size_of_buffer, input_file);
 
     assert(buffer != NULL);
 
@@ -47,11 +37,12 @@ int calculator (my_stack_t* stk1)
     int* buffer = 0;
     size_t size_of_buffer = 0;
 
-    buffer = read_from_file(TEST, size_of_buffer);
+    buffer = read_from_file(TEST, &size_of_buffer);
 
     int value_cal = 0;
     int command = 0;
     size_t ip = 0;
+    int A, B, C = 0;
 
     while (command != HTL)
     {
@@ -61,11 +52,11 @@ int calculator (my_stack_t* stk1)
 
         if (command == PUSH)
         {
+            ip++;
+
             value_cal = buffer[ip];// TODO чтение из массива
 
             fprintf(stderr, "PUSHED VALUE: %d\n",value_cal);
-
-            ip++;
 
             StackPush(stk1, value_cal);
 
@@ -184,6 +175,8 @@ int calculator (my_stack_t* stk1)
 
             int s = x * x;
 
+            fprintf(stderr, "\n\nPOW value: %d\\n", s);
+
             StackPush(stk1, s);
 
             #ifdef DEBUG
@@ -204,6 +197,98 @@ int calculator (my_stack_t* stk1)
             int s = (int) sqrt((double) x);
 
             StackPush(stk1, s);
+
+            #ifdef DEBUG
+                StackDump(stk1, 0, __FILE__, __func__ ,__LINE__);
+            #endif
+        }
+
+        if (command == PUSHREG)
+        {
+            ip++;
+            command = buffer[ip];
+
+            if (command == Ax)
+            {
+            // QUE: если пишем PUSHREG мы присваиваем и переменной и кладем в стек?
+            fprintf(stderr, "PUSHED AX : %d\n",A);
+
+            StackPush(stk1, A);
+            }
+
+            if (command == Bx)
+            {
+            fprintf(stderr, "PUSHED BX : %d\n",B);
+
+            StackPush(stk1, B);
+            }
+
+            if (command == Cx)
+            {
+            fprintf(stderr, "PUSHED CX : %d\n",C);
+
+            StackPush(stk1, C);
+            }
+
+
+            #ifdef DEBUG
+                StackDump(stk1, 0, __FILE__, __func__ ,__LINE__);
+            #endif
+        }
+
+        if (command == POPREG)
+        {
+            ip++;
+            command = buffer[ip];
+
+            if (command == Ax)
+            {
+            StackPop(stk1, &A);
+
+            fprintf(stderr, "POPED AX : %d\n",A);
+
+            }
+
+            if (command == Bx)
+            {
+            StackPop(stk1, &B);
+
+            fprintf(stderr, "POPED BX : %d\n",B);
+            }
+
+            if (command == Cx)
+            {
+            StackPop(stk1, &C);
+
+            fprintf(stderr, "POPED CX : %d\n",C);
+            }
+
+            #ifdef DEBUG
+                StackDump(stk1, 0, __FILE__, __func__ ,__LINE__);
+            #endif
+        }
+        if (command == POP)
+        {
+            int x = 0;
+
+            StackPop(stk1, &x);
+
+            fprintf(stderr, "%d", x);
+
+            #ifdef DEBUG
+                StackDump(stk1, 0, __FILE__, __func__ ,__LINE__);
+            #endif
+        }
+
+        if (command == JMP)
+        {
+            ip++;
+
+            value_cal = buffer[ip];// TODO чтение из массива
+
+            fprintf(stderr, "STR JUMP: %d\n",value_cal);
+
+            ip = value_cal;
 
             #ifdef DEBUG
                 StackDump(stk1, 0, __FILE__, __func__ ,__LINE__);
