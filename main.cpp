@@ -4,20 +4,27 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "stack_functions.h"
-#include "calculator.h"
+#include "processor.h"
 
 int main ()
 {
-    my_stack_t stk1 = {};
-    StackCtor (&stk1, 10); // функция заполнения массива
+    my_pro_t processor = {};
+
+    if (ProcessorCtor(&processor) != NOERORR)
+    {
+        fprintf(stderr, "Failed to initialize processor\n");
+        return ERORRPOINTER;
+    }
 
     #ifdef DEBUG
-        StackDump(&stk1, 0, __FILE__, __func__ ,__LINE__);
+        StackDump(processor.stk1, 0, __FILE__, __func__ ,__LINE__);
     #endif
 
-    calculator (&stk1);
+    calculator(&processor);
 
-    StackDtor(&stk1);
+    StackDtor(processor.stk1);
+    free(processor.stk1);
+    free(processor.buffer);
 
     return NOERORR;
 }

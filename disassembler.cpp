@@ -5,12 +5,14 @@
 #include "enum.h"
 
 #include "stack_functions.h"
-#include "calculator.h"
+#include "processor.h"
 
 int SyntaxERROR(int pos);
 
 int main ()
 {
+    my_pro_t str_pro2 = {};
+
     const char* TEST = "mashine_code_bin.bin";
 
     if (TEST == NULL)
@@ -22,7 +24,7 @@ int main ()
     int* buffer = 0;
     size_t size_of_buffer = 0;
 
-    buffer = read_from_file(TEST, &size_of_buffer);
+    buffer = read_from_file(&str_pro2, TEST, &size_of_buffer);
 
     size_of_buffer = size_of_buffer/ sizeof(int);
 
@@ -58,9 +60,9 @@ int main ()
         {
             fprintf (MASHINCODE, "OUT\n");
         }
-        else if (buffer[pos] == SQvRT)
+        else if (buffer[pos] == SQRT)
         {
-            fprintf (MASHINCODE, "SQvRT\n");
+            fprintf (MASHINCODE, "SQRT\n");
         }
         else if (buffer[pos] == HTL)
         {
@@ -94,9 +96,41 @@ int main ()
         {
             fprintf (MASHINCODE, "Cx\n");
         }
+        else if (buffer[pos] == Dx)
+        {
+            fprintf (MASHINCODE, "Dx\n");
+        }
         else if (buffer[pos] == POPREG)
         {
             fprintf (MASHINCODE, "POPREG\n");
+        }
+        else if (buffer[pos] == JB)
+        {
+            fprintf (MASHINCODE, "JB\n");
+        }
+        else if (buffer[pos] == JBE)
+        {
+            fprintf (MASHINCODE, "JBE\n");
+        }
+        else if (buffer[pos] == JA)
+        {
+            fprintf (MASHINCODE, "JA\n");
+        }
+        else if (buffer[pos] == JAE)
+        {
+            fprintf (MASHINCODE, "JAE\n");
+        }
+        else if (buffer[pos] == JE)
+        {
+            fprintf (MASHINCODE, "JE\n");
+        }
+        else if (buffer[pos] == JNE)
+        {
+            fprintf (MASHINCODE, "JNE\n");
+        }
+        else if (buffer[pos] == INN)
+        {
+            fprintf (MASHINCODE, "INN\n");
         }
             SyntaxERROR(pos);
 

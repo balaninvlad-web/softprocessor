@@ -32,6 +32,7 @@ StackErr_t StackCtor (my_stack_t* stk1, size_t capacity)
     #ifdef DEBUG
         verificator (stk1, __FILE__, __func__ ,__LINE__);
     #endif
+
     return NOERORR;
 }
 
@@ -51,7 +52,7 @@ StackErr_t StackPush (my_stack_t* stk1, int value)
         {
             size_t new_capacity = (stk1 -> capacity == 0) ? START_OF_DATA : stk1 -> capacity * 2;
 
-            int* new_data = (int*)realloc(stk1 -> data, new_capacity * sizeof(int));
+            int* new_data = (int*)realloc(stk1->data, (new_capacity + 2) * sizeof(int));
 
             if (new_data == nullptr)
             {
@@ -60,6 +61,8 @@ StackErr_t StackPush (my_stack_t* stk1, int value)
 
             stk1->data = new_data;
             stk1->capacity = new_capacity;
+
+            stk1->data[0] = CANAREICA1;
             stk1->data[stk1->capacity + 1] = CANAREICA2;
         }
 
@@ -205,9 +208,9 @@ StackErr_t StackDump (my_stack_t* stk1, int i, const char* file, const char* fun
                 fprintf(stderr, "*[%d] = %d \n", j, stk1->data[j]);
             }
 
-            for (size_t __vovin penis = stk1->sizestk; penis < stk1 -> capacity + 2; penis++)
+            for (size_t j = stk1->sizestk; j < stk1->capacity + 2; j++)
             {
-                fprintf(stderr, " [%d] = %06X (POISON)\n", penis, stk1 -> data[penis]);
+                fprintf(stderr, " [%du] = %06X (POISON)\n", j, stk1->data[j]);
             }
             fprintf(stderr, "\n");
         }

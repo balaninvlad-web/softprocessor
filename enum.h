@@ -1,6 +1,8 @@
 #ifndef ENUM_H
 #define ENUM_H
 
+#include <TXLib.h>
+
 enum nameOFcommand
 {
     PUSH    = 1,
@@ -8,7 +10,7 @@ enum nameOFcommand
     SUB     = 3,
     DIV     = 4,
     OUTP    = 5,
-    SQvRT   = 6,
+    SQRT    = 6,
     MUL     = 7,
     POW     = 8,
     JMP     = 9,
@@ -16,6 +18,13 @@ enum nameOFcommand
     HTL     = 11,
     PUSHREG = 33,
     POPREG  = 52,
+    JB      = 12,
+    JBE     = 13,
+    JA      = 14,
+    JAE     = 15,
+    JE      = 16,
+    JNE     = 17,
+    INN     = 18,
 };
 
 enum nameOFregistr
@@ -23,6 +32,7 @@ enum nameOFregistr
     Ax = 111,
     Bx = 222,
     Cx = 333,
+    Dx = 444,
 };
 
 #endif
