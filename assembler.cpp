@@ -2,14 +2,63 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "enum.h"
+#include "stack_functions.h"
+#include "assembler.h"
 
-int SyntaxERROR(int pos, char* smdStr);
+void first_go (FILE* test, Labels* labels)
+{
+    char line[256] = {};
+    int i = 0;
+
+    printf("=== FIRST PASS ===\n");
+
+    while (fgets(line, sizeof(line), test))
+    {
+        line[strcspn(line, "\n")] = 0;
+
+        if (strlen(line) == 0 || line[0] == ';')
+        {
+            continue;
+        }
+
+        if (num_of_label(line))
+        {
+            int pos_labels = take_label_num(line);
+            addlabels(pos_labels, i, labels);
+        }
+        else
+        {
+            i++;
+
+            if (strstr(line, "PUSH") || strstr(line, "JMP") ||
+                strstr(line, "JB") || strstr(line, "JBE") ||
+                strstr(line, "JA") || strstr(line, "JAE") ||
+                strstr(line, "JE") || strstr(line, "JNE") ||
+                strstr(line, "PUSHREG") || strstr(line, "POPREG"))
+            {
+                i++;
+            }
+        }
+    }
+}
 
 int main ()
 {
-    size_t pos = 0;
-    size_t capacity = 100;
+    Labels labels;
+
+    make_labels(&labels);
+
+    my_stack_t* stack_call = (my_stack_t*)malloc(sizeof(my_stack_t));
+
+    if (stack_call == NULL)
+    {
+        printf("Ошибка выделения памяти для стека вызовов\n");
+        return -1;
+    }
+    StackCtor(stack_call, 100);
 
     FILE* test = fopen ("test2.ams", "r");
 
@@ -18,6 +67,12 @@ int main ()
         printf("Не удалось открыть файл test\n");
         return -1;
     }
+    first_go(test, &labels);
+
+    fseek(test, 0, SEEK_SET);
+
+    size_t pos = 0;
+    size_t capacity = 2000;
 
     int* code = (int*)calloc(capacity, sizeof(int));
 
@@ -31,16 +86,16 @@ int main ()
 
     char cmdStr[40] = "";
 
-    while (1)// пока не конец файла
+    while (1)
     {
-        if(fscanf(test, "%39s", cmdStr) == EOF)
+        if(fscanf(test, "%s", cmdStr) == EOF)
         {
             break;
         }
 
-        //$_(pos);
+        $_(pos);
 
-        //$(cmdStr);
+        $(cmdStr);
 
         if (pos + 2 >= capacity)
         {
@@ -55,8 +110,9 @@ int main ()
                 return -1;
             }
 
-        code = new_code;
+            code = new_code;
         }
+
         if (strcmp (cmdStr, "PUSH") == 0)
         {
             code[pos++] = PUSH;
@@ -103,11 +159,34 @@ int main ()
         {
             code[pos++] = JMP;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                printf("\n\nlabel: %d \n\n", pos_labels);
+                int address = get_addres_label(pos_labels, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;                                                                                                                          printf ("vvpdrs\n");
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "POW") == 0)
         {
@@ -138,73 +217,249 @@ int main ()
         {
             code[pos++] = JB;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                int address = get_addres_label(pos_labels, &labels);                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "JBE") == 0)
         {
             code[pos++] = JBE;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                int address = get_addres_label(pos_labels, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "JA") == 0)
         {
             code[pos++] = JA;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                int address = get_addres_label(pos_labels, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "JAE") == 0)
         {
             code[pos++] = JAE;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                int address = get_addres_label(pos_labels, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "JE") == 0)
         {
             code[pos++] = JE;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int label_num = take_label_num(argument);
+                int address = get_addres_label(label_num, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "JNE") == 0)
         {
             code[pos++] = JNE;
 
-            int arg = 0;
+            char argument[10] = {};
 
-            fscanf(test, "%d", &arg);
+            fscanf(test, "%s", argument);
 
-            code[pos++] = arg;
+            if (argument[0] == ':')
+            {
+                int pos_labels = take_label_num(argument);
+                int address = get_addres_label(pos_labels, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: Label %s not found!\n", argument);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("JMP to %s (address: %d)\n", argument, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
         }
         else if (strcmp (cmdStr, "POPREG") == 0)
         {
             code[pos++] = POPREG;
             printf("\n pop\n");
         }
-        if (strcmp (cmdStr, "INN") == 0)
+        else if (strcmp (cmdStr, "INN") == 0)
         {
             code[pos++] = INN;
         }
-        //else
-           // SyntaxERROR(pos, cmdStr);
+        else if (strcmp (cmdStr, "CALL") == 0)
+        {
+            code[pos++] = CALL;
+
+            char call_arg[10] = {};
+
+            fscanf(test, "%s", call_arg);
+
+            if (call_arg[0] == ':')
+            {
+                int pos_call = take_label_num(call_arg);
+                int address = get_addres_label(pos_call, &labels);
+                if (address == -1)
+                {
+                    printf("ERROR: CALL LABEL %s not found!\n", call_arg);
+                    free(code);
+                    fclose(test);
+                    return -1;
+                }
+                code[pos++] = address;
+
+                printf("CALL to %s (address: %d)\n", call_arg, address);
+            }
+            else
+            {
+                int arg = 0;
+
+                fscanf(test, "%d", &arg);
+
+                code[pos++] = arg;
+            }
+            pos++;
+
+            StackPush(stack_call, pos);
+
+            StackDump(stack_call, 0, __FILE__, __func__ ,__LINE__);
+        }
+        else if (strcmp (cmdStr, "RET"))
+        {
+            int ret_pos = 0;
+
+            StackPop(stack_call, &ret_pos);
+
+            pos = ret_pos;
+        }
+        else
+            SyntaxERROR(pos, cmdStr);
     }
 
     //FILE* mashine_code = fopen("mashine_code.bin", "w");
@@ -217,7 +472,7 @@ int main ()
     //printf("pos = %d\n",pos);
     //fclose(mashine_code);
 
-    FILE* mashine_code_bin = fopen("mashine_code_bin4.bin", "wb");
+    FILE* mashine_code_bin = fopen("mashine_code_bin5.bin", "wb");
 
     if (mashine_code_bin != NULL)
     {
@@ -232,6 +487,9 @@ int main ()
     }
 
     free(code);
+    fclose(test);
+    StackDtor(stack_call);
+    free(stack_call);
 
     return 0;
 }
@@ -244,4 +502,51 @@ int SyntaxERROR(int pos, char* cmdStr)
     printf("ERORR in assembler, in position %d\n\n", pos);
     $d
     return -1;
+}
+
+void make_labels(Labels* labels)
+{
+    for (int i = 0; i < MAX_LABELS; i++)
+    {
+        labels->labels[i] = -1;
+    }
+}
+
+void addlabels(int pos, int address, Labels* labels)
+{
+    if (pos >= 0 && pos < MAX_LABELS)
+    {
+        labels->labels[pos] = address;
+        fprintf(stderr, "Label %d at address %d\n", pos, address);
+    }
+}
+
+int get_addres_label (int pos_labels, Labels* labels)
+{
+    if (pos_labels >= 0 && pos_labels < MAX_LABELS)
+    {
+        return labels->labels[pos_labels];
+    }
+    return -1;
+}
+
+int num_of_label (const char* str)
+{
+    if (str[0] != ':')
+        return 0;
+
+    size_t len = strlen(str);
+
+    for (int i = 1; i < len; i++)
+    {
+        if(isdigit(str[i]) == 0)
+            return 0;
+    }
+
+    return 1;
+}
+
+int take_label_num (const char* label_str)
+{
+    return atoi(label_str + 1);
 }
