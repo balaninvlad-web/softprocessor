@@ -3,6 +3,16 @@
 
 #include <TXLib.h>
 
+typedef enum
+{
+    no_arg = 0,
+    value = 1,
+    JMP_arg = 2,
+    reg_val = 3,
+    call_arg = 4,
+    mem_arg = 5
+} ArgType;
+
 enum nameOFcommand
 {
     PUSH    = 1,
@@ -25,6 +35,12 @@ enum nameOFcommand
     JE      = 16,
     JNE     = 17,
     INN     = 18,
+    RET     = 19,
+    CALL    = 20,
+    PUSHM   = 21,
+    POPM    = 22,
+    MOD     = 23,
+    DISP    = 25,
 };
 
 enum nameOFregistr

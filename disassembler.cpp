@@ -13,7 +13,7 @@ int main ()
 {
     my_pro_t str_pro2 = {};
 
-    const char* TEST = "mashine_code_bin.bin";
+    const char* TEST = "mashine_code_bin5.bin";
 
     if (TEST == NULL)
     {
@@ -35,11 +35,13 @@ int main ()
 
     char cmdStr[20] = "";
 
+    //TODO: printf command function
+
     while (pos <= size_of_buffer)// пока не конец файла
     {
         if (buffer[pos] == PUSH)
         {
-            fprintf(MASHINCODE, "PUSH\n");
+            fprintf(MASHINCODE, "PUSH ");
 
             fprintf(MASHINCODE, "%d\n", buffer[++pos]);
         }
@@ -82,7 +84,7 @@ int main ()
         }
         else if (buffer[pos] == PUSHREG)
         {
-            fprintf (MASHINCODE, "PUSHREG\n");
+            fprintf (MASHINCODE, "PUSHREG ");
         }
         else if (buffer[pos] == Ax)
         {
@@ -102,37 +104,38 @@ int main ()
         }
         else if (buffer[pos] == POPREG)
         {
-            fprintf (MASHINCODE, "POPREG\n");
+            fprintf (MASHINCODE, "POPREG ");
         }
         else if (buffer[pos] == JB)
         {
-            fprintf (MASHINCODE, "JB\n");
+            fprintf (MASHINCODE, "JB ");
         }
         else if (buffer[pos] == JBE)
         {
-            fprintf (MASHINCODE, "JBE\n");
+            fprintf (MASHINCODE, "JBE ");
         }
         else if (buffer[pos] == JA)
         {
-            fprintf (MASHINCODE, "JA\n");
+            fprintf (MASHINCODE, "JA ");
         }
         else if (buffer[pos] == JAE)
         {
-            fprintf (MASHINCODE, "JAE\n");
+            fprintf (MASHINCODE, "JAE ");
         }
         else if (buffer[pos] == JE)
         {
-            fprintf (MASHINCODE, "JE\n");
+            fprintf (MASHINCODE, "JE ");
         }
         else if (buffer[pos] == JNE)
         {
-            fprintf (MASHINCODE, "JNE\n");
+            fprintf (MASHINCODE, "JNE ");
         }
         else if (buffer[pos] == INN)
         {
-            fprintf (MASHINCODE, "INN\n");
+            fprintf (MASHINCODE, "INN");
         }
-            SyntaxERROR(pos);
+        else
+            fprintf (MASHINCODE, "%d\n", buffer[pos]);
 
         pos++;
     }
@@ -193,10 +196,41 @@ int* read_from_file(const char* TEST, size_t* size_of_buffer)
     return buffer;
 }
 
+int* read_from_file(my_pro_t* str_pro, const char* TEST, size_t* size_of_buffer)
+{
+    FILE* input_file = fopen(TEST, "rb");
+
+    assert(input_file != NULL);
+
+    struct stat statbuf ={};
+
+    stat (TEST, &statbuf);
+
+    *size_of_buffer = statbuf.st_size;
+
+    assert(*size_of_buffer != 0);
+
+    $(*size_of_buffer);
+
+    str_pro->buffer = (int*)calloc(*size_of_buffer + 1, sizeof(char));
+
+    str_pro->buffer[*size_of_buffer] = '\0';
+
+    fread(str_pro->buffer, sizeof(int), *size_of_buffer, input_file);
+
+    #ifdef DEBUG
+        for (int i = 0; i < *size_of_buffer/4 ; i++)
+        {
+            fprintf(stderr, "%d |i = %d|\n",str_pro->buffer[i], i);
+        }
+    #endif
+
+    return str_pro->buffer;
+}
 
 int SyntaxERROR(int pos)
 {
-    printf("ERORR in assembler, in position %d", pos);
+    printf("ERORR in assembler, in position %d\n", pos);
 
     return -1;
 }

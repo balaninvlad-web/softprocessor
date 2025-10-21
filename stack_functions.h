@@ -10,6 +10,7 @@
 #define __vovin
 #define __seregin
 #define __dedov
+#define MAX_LABELS 10
 
 //#define $$$$(...)  __VA_ARGS__
 
@@ -29,7 +30,6 @@ typedef struct
     int* data;
     size_t capacity;
     size_t sizestk;
-
 } my_stack_t;
 
 enum nameOFerrWORK
