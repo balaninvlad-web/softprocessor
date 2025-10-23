@@ -45,10 +45,10 @@ enum nameOFcommand
 
 enum nameOFregistr
 {
-    Ax = 111,
-    Bx = 222,
-    Cx = 333,
-    Dx = 444,
+    Ax = 1,
+    Bx = 2,
+    Cx = 3,
+    Dx = 4,
 };
 
 #endif

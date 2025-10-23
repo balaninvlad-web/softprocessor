@@ -17,28 +17,40 @@
 #define POS_Cx 3
 #define POS_Dx 4
 
+#ifdef DEBUG
+    #define DUMP_PRO(str_pro, command) DumpPro(str_pro, 0, __FILE__, __func__, __LINE__, command)
+#else
+    #define DUMP_PRO(str_pro, command)
+#endif
+
+const int number_of_mem_cells = 100;
+
 typedef struct
 {
-    my_stack_t stk1;
+    my_stack_t stk_for_calculate;
     int* buffer;
     size_t ip;
     int registers[4];
     my_stack_t stk_call;
-    int Ram_Mem [100] ={};
-
+    int Ram_Mem [number_of_mem_cells] ={};
 } my_pro_t;
 
-int Calculator(my_pro_t* stk1, char* file_name);
+int Processor_calculate(my_pro_t* stk1,const char* file_name);
 int* read_from_file(my_pro_t* str_pro, const char* TEST, size_t* size_of_buffer);
-int ProcessorCtor(my_pro_t* str_pro);
+int ProcessorCtor(my_pro_t* str_pro, const char* file_name);
 void ProcessorDtor(my_pro_t* str_pro);
+int verificator_pro(my_pro_t* str_pro, const char* file, const char* func, int line, int command);
 int DumpPro (my_pro_t* str_pro,int i, const char* file, const char* func, int line, int command);
 void Do_Jump_if_true(my_pro_t* str_pro, int* buffer, int command);
 int* getRegisterAddress(my_pro_t* str_pro,int curr_register_num);
 bool IfCondJump(int command, int x, int y);
-void Push_printf (int s, my_pro_t* str_pro, int command);
-int Calculate_func_first (int command, my_pro_t* str_pro);
+void Push_printf(int received_value, my_pro_t* str_pro, int command, int* buffer);
+void Calculate_func_first (int command, my_pro_t* str_pro);
 const char* Get_Name_registr (int curr_register_num);
 void One_value_calc (int command, my_pro_t* str_pro);
+void Mem_func(int command, my_pro_t* str_pro, int* buffer);
+void Do_if_Call(my_pro_t* str_pro, int* buffer, int command);
+void Do_if_Jmp(int command, my_pro_t* str_pro, int* buffer);
+void Do_for_reg(int command, my_pro_t* str_pro, int* buffer);
 
 #endif

@@ -300,6 +300,8 @@ int PrintToBinaryFile(int* code,int pos, const char* file_name)
 {
     FILE* mashine_code_bin = fopen(file_name, "wb");
 
+    fprintf(stderr, "TEST :%s\n", file_name);
+
     if (mashine_code_bin != NULL)
     {
 
@@ -346,7 +348,7 @@ int* find_command (char* cmdStr, FILE* file_asm, int* code, Labels* labels, int*
         }
 
 
-        if (strcmp(cmdStr, all_Cmd[i].name) == 0)
+        if (strcmp(cmdStr, all_Cmd[i].name) == 0) // сделать функцию берющую только номер команды
         {
             switch (all_Cmd[i].arg)
             {
@@ -956,6 +958,7 @@ int* Command_for_reg (int* code, StructCmd* all_Cmd, int* pos_ptr, FILE* file_as
     *pos_ptr = pos;
     return code;
 }
+
 int* Command_for_call(int* code, StructCmd* all_Cmd, int* pos_ptr, FILE* file_asm, size_t i, Labels* labels)
 {
     assert(pos_ptr);

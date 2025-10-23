@@ -6,7 +6,7 @@
 #include "stack_functions.h"
 #include "processor.h"
 
-int main (int argc, char* argv[])
+int main (int argc,const char* argv[])
 {
     if (argc < 2)
     {
@@ -14,25 +14,33 @@ int main (int argc, char* argv[])
         return 1;
     }
 
-    char* file_name = argv[1];
+    const char* file_name = argv[1];
+
+    if (file_name == NULL)
+    {
+        fprintf(stderr, "ERROR: File name is NULL\n");
+        return 1;
+    }
 
     fprintf(stderr, "Running program: %s\n", file_name);
 
-    my_pro_t processor = {};
+    my_pro_t processor;
 
-    if (ProcessorCtor(&processor) != NOERORR)
+    if (ProcessorCtor(&processor, file_name) != NOERORR)
     {
         fprintf(stderr, "Failed to initialize processor\n");
         return ERORRPOINTER;
     }
 
     #ifdef DEBUG
-        StackDump(&processor.stk1, 0, __FILE__, __func__ ,__LINE__);
+        StackDump(&processor.stk_for_calculate, 0, __FILE__, __func__ ,__LINE__);
     #endif
 
-    int results = Calculator(&processor, file_name);
+    Processor_calculate(&processor, file_name);
 
-    StackDtor(&processor.stk1);
+    ProcessorDtor(&processor);
+
+    StackDtor(&processor.stk_for_calculate);
     free(processor.buffer);
 
     return NOERORR;

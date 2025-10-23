@@ -11,19 +11,17 @@
 #define ERORRNULLBUFF 1
 #define ERORRNULLSTK1 2
 
-int verificator_pro(my_pro_t* str_pro, const char* file, const char* func, int line, int command);
-//int DumpPro(my_pro_t* str_pro, int i, const char* file, const char* func, int line);
-//int ProcessorCtor(my_pro_t* str_pro);
-
-int* read_from_file(my_pro_t* str_pro, const char* TEST, size_t* size_of_buffer)
+int* read_from_file(my_pro_t* str_pro, const char* test, size_t* size_of_buffer)
 {
-    FILE* input_file = fopen(TEST, "rb");
+    fprintf(stderr, "TEST PRO :%s\n", test);
+
+    FILE* input_file = fopen(test, "rb");
 
     assert(input_file != NULL);
 
     struct stat statbuf ={};
 
-    stat (TEST, &statbuf);
+    stat (test, &statbuf);
 
     *size_of_buffer = statbuf.st_size;
 
@@ -47,15 +45,19 @@ int* read_from_file(my_pro_t* str_pro, const char* TEST, size_t* size_of_buffer)
     return str_pro->buffer;
 }
 
-int ProcessorCtor (my_pro_t* str_pro)
+int ProcessorCtor (my_pro_t* str_pro, const char* file_name)
 {
     assert(str_pro);
 
     size_t size_of_buffer = 0;
 
-    const char* TEST = "mashine_code_bin4.bin";
+    fprintf(stderr, "Loading file: %s\n", file_name);
 
-    if (StackCtor(&str_pro->stk1, 6) != NOERORR)
+    const char* test = file_name;
+
+    fprintf(stderr, "Loading file test: %s\n", test);
+
+    if (StackCtor(&str_pro->stk_for_calculate, 6) != NOERORR) //TODO переименновать
     {
         return ERORRDATANULL;
     }
@@ -65,16 +67,18 @@ int ProcessorCtor (my_pro_t* str_pro)
         return ERORRDATANULL;
     }
 
-    str_pro->buffer = read_from_file(str_pro, TEST, &size_of_buffer);
+    str_pro->buffer = read_from_file(str_pro, test, &size_of_buffer);
 
     str_pro->ip = 0;
 
-    str_pro->Ram_Mem [100] ={};
+    for(size_t i = 0; i <= 4; i++)
+        str_pro->registers[i] = 0;
+
+    str_pro->Ram_Mem [number_of_mem_cells] ={}; // TODO убрать число
 
     #ifdef DEBUG
         verificator_pro (str_pro, __FILE__, __func__ ,__LINE__, -1);
     #endif
-
 
     return NOERORR;
 }
@@ -83,15 +87,18 @@ void ProcessorDtor(my_pro_t* str_pro)
 {
     assert(str_pro != NULL);
 
-    if (str_pro->stk1.data != NULL)
+    if (str_pro->stk_for_calculate.data != NULL)
     {
-        StackDtor(&str_pro->stk1);
+        StackDtor(&str_pro->stk_for_calculate);
     }
 
     if (str_pro->stk_call.data != NULL)
     {
         StackDtor(&str_pro->stk_call);
     }
+
+    free(str_pro->buffer);
+    // TODO освобождать буффер
 }
 
 int verificator_pro (my_pro_t* str_pro, const char* file, const char* func, int line, int command)
@@ -134,9 +141,9 @@ int DumpPro (my_pro_t* str_pro,int i, const char* file, const char* func, int li
 
     printf("\n");
 
-    verificator (&str_pro->stk1,  file, func, line);
+    verificator (&str_pro->stk_for_calculate,  file, func, line);
 
-    StackDump(&str_pro->stk1, i, file, func, line);
+    StackDump(&str_pro->stk_for_calculate, i, file, func, line);
 
     fprintf(stderr, "----------------------------DUMBPROCESSOREND\n\n");
 
